@@ -1,0 +1,55 @@
+/* Design tokens extracted from legacy olb.css (docs/02-ui-spec.md §4). Contrast fixes per §9 A8. */
+:root {
+  --color-brand-navy: #012169;
+  --color-brand-navy-hover: #02308f;
+  --color-brand-red: #dc1431;
+  --color-link: #0052c2;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #333;
+  --color-text-tertiary: #444;
+  --color-text-muted: #555;
+  --color-text-subtle: #595959;   /* legacy #666 / #777 / #999, lifted for 4.5:1+ */
+  --color-hero-start: #0b1e7a;
+  --color-hero-mid: #1a3dcf;
+  --color-hero-end: #2255e6;
+  --color-hero-fallback: #1b3fcf;
+  --color-hero-kicker: #e6ebff;   /* legacy #cfd8f5 failed contrast */
+  --color-hero-body: #e6ebff;
+  --color-hero-text: #fff;
+  --color-surface-page: #fff;
+  --color-surface-band: #f3f3f3;
+  --color-surface-table-head: #f4f4f4;
+  --color-surface-total-row: #fafafa;
+  --color-surface-schedule: #f8f9fc;
+  --color-border-schedule: #e3e6ef;
+  --color-border-default: #ddd;
+  --color-border-light: #e3e3e3;
+  --color-border-row: #e5e5e5;
+  --color-border-row-light: #eee;
+  --color-border-input: #ccc;
+  --color-border-input-strong: #666;
+  --color-accent-gold: #f4e3a3;
+  --color-status-posted: #1b7f3b;
+  --color-status-scheduled: #7a5400; /* legacy #9a6b00 borderline */
+  --color-status-rejected: #b3261e;
+  --color-error-text: #b3261e;
+  --color-error-bg: #fdf1f1;
+  --color-error-border: #d9342b;
+  --color-error-dark: #8a1c14;
+  --shadow-nav: 0 3px 4px rgba(0, 0, 0, 0.12);
+  --shadow-banner: 0 -3px 6px rgba(0, 0, 0, 0.1);
+  --gradient-hero: linear-gradient(90deg, var(--color-hero-start) 0%, var(--color-hero-mid) 60%, var(--color-hero-end) 100%);
+  --font-sans: Roboto, 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  --font-mono: 'Courier New', Courier, monospace;
+  --radius-primary: 28px;
+  --radius-pill: 26px;
+  --radius-panel: 10px;
+  --radius-card: 6px;
+  --radius-field: 4px;
+  --gutter: 60px;
+  --max-content: 1440px;
+  --field-height: 54px;
+  --focus-ring: 0 0 0 2px #fff, 0 0 0 4px var(--color-brand-navy);
+}
+@media (max-width: 1279px) { :root { --gutter: 40px; } }
+@media (max-width: 767px) { :root { --gutter: 16px; --field-height: 50px; } }
