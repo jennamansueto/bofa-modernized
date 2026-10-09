@@ -51,4 +51,4 @@ Everything else — fee matrix, tier override, Reg D counting, same-day-only dai
 
 ## Recordings
 - #1 Legacy walkthrough: https://devin-gtm.devinenterprise.com/attachments/de5b9af6-d8a5-4020-a9d1-14f671a07a11/legacy-portal-walkthrough-edited.mp4
-- #2 Modern system + acceptance tests: https://devin-gtm.devinenterprise.com/attachments/13bfebcc-6944-4daf-a210-1399d0c7f511/modern-portal-walkthrough.mp4
+- #2 Modern system + acceptance tests: https://devin-gtm.devinenterprise.com/attachments/50d00945-7d35-4a0b-b4d3-c66c9d6c4640/modern-portal-walkthrough-v2.mp4
