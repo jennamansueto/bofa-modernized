@@ -23,18 +23,22 @@ export function ActivityTable({ rows }: { rows: TransferResponse[] }) {
             <td data-label="From">{t.from}</td>
             <td data-label="To">{t.to}</td>
             <td data-label="Status" className={`status-${t.statusCode}`}>
-              {t.status}
-              {t.statusCode === 'S' && (
-                <>
-                  <span aria-hidden="true"> · </span>
-                  <span className="visually-hidden">, expected </span>
-                  {monthDay(t.postDate)}
-                </>
-              )}
+              <span>
+                {t.status}
+                {t.statusCode === 'S' && (
+                  <>
+                    <span aria-hidden="true"> · </span>
+                    <span className="visually-hidden">, expected </span>
+                    {monthDay(t.postDate)}
+                  </>
+                )}
+              </span>
             </td>
             <td data-label="Amount" className="amt">
-              {t.amount}
-              {t.feeCents > 0 && <span className="fee-note">+ {t.fee} fee</span>}
+              <span>
+                {t.amount}
+                {t.feeCents > 0 && <span className="fee-note">+ {t.fee} fee</span>}
+              </span>
             </td>
           </tr>
         ))}
