@@ -69,6 +69,20 @@ describe('TransferPanel', () => {
     await waitFor(() => expect(alert).toHaveFocus());
     expect(screen.getByLabelText('Amount')).toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByLabelText('Amount')).toHaveValue('500');
+
+    await userEvent.type(screen.getByLabelText('Amount'), '0');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Amount')).not.toHaveAttribute('aria-invalid');
+  });
+
+  it('opens Schedule options when the restored draft has a send-on date', () => {
+    mockFetch({ 'POST /api/secure/transfers/quote': (b) => quoteFor(b as TransferRequest) });
+    sessionStorage.setItem('olb.transferDraft', JSON.stringify({ userId: 'demo.user', draft: {
+      fromAccountId: 'ACCT-1001', toAccountId: 'ACCT-1002', amount: '50', tierCode: '10', delivery: 'EXS', frequency: 'O', scheduledDate: '10/20/2026', memo: '',
+    } }));
+    renderWithProviders(<TransferPanel me={ME} accounts={ACCOUNTS} />);
+    expect(screen.getByRole('button', { name: /Schedule options/ })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByLabelText(/Send on/)).toBeVisible();
   });
 
   it('AC-39 navigates to the confirmation on success', async () => {

@@ -29,8 +29,10 @@ function toRequest(d: TransferDraft): TransferRequest {
 
 export function TransferPanel({ me, accounts }: Props) {
   const [draft, setDraft] = useState<TransferDraft>(() => loadDraft(me.userId) ?? defaultDraft(me, accounts));
-  const [schedOpen, setSchedOpen] = useState(false);
+  const [schedOpen, setSchedOpen] = useState(() => !!draft.scheduledDate || draft.frequency !== 'O' || !!draft.memo);
   const [submitError, setSubmitError] = useState<ApiError | null>(null);
+  const [fatalError, setFatalError] = useState<unknown>(null);
+  if (fatalError) throw fatalError;
   const alertRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const submit = useSubmitTransfer();
@@ -60,8 +62,10 @@ export function TransferPanel({ me, accounts }: Props) {
     if (submitField === 'scheduledDate' || submitField === 'frequency') setSchedOpen(true);
   }, [submitField]);
 
-  const set = (field: keyof TransferDraft) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+  const set = (field: keyof TransferDraft) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setSubmitError(null);
     setDraft((d) => ({ ...d, [field]: e.target.value }));
+  };
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +83,7 @@ export function TransferPanel({ me, accounts }: Props) {
           setSubmitError(err);
           requestAnimationFrame(() => alertRef.current?.focus());
         } else {
-          throw err;
+          setFatalError(err);
         }
       },
     });

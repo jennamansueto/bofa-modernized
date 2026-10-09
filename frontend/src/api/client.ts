@@ -55,6 +55,9 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     const err = new ApiError(body);
     if (err.isUnauthorized && path.startsWith('/api/secure/')) {
       window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT, { detail: err }));
+    } else if (res.status < 500) {
+      // The server still touched the session (e.g. a 422 quote), so keep the inactivity timer in step.
+      window.dispatchEvent(new Event(ACTIVITY_EVENT));
     }
     throw err;
   }
