@@ -1,0 +1,660 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "OLB Transfers API",
+    "description" : "Modernized Bank of America Online Banking Transfers API. Session-cookie auth: POST /api/login, then call /api/secure/** with the SESSION cookie and X-XSRF-TOKEN header (value of the XSRF-TOKEN cookie) on mutating requests.",
+    "version" : "1.0.0"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:44917",
+    "description" : "Generated server url"
+  } ],
+  "tags" : [ {
+    "name" : "Session",
+    "description" : "Sign-in / sign-out / current customer"
+  }, {
+    "name" : "Transfers",
+    "description" : "Accounts, quotes, submissions and history for the signed-in customer"
+  } ],
+  "paths" : {
+    "/api/secure/transfers" : {
+      "get" : {
+        "tags" : [ "Transfers" ],
+        "summary" : "Recent activity",
+        "description" : "Last 10 transfers ordered by crt_ts DESC, transfer_id DESC (AC-12).",
+        "operationId" : "history",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TransferResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Transfers" ],
+        "summary" : "Submit a transfer",
+        "description" : "Legacy /secure/transferSubmit.do: re-validates, allocates XFRyyMMdd-nnnnnn, posts (INT today) or schedules, and returns the confirmation plus updated balances.",
+        "operationId" : "submit",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TransferRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Transfer created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferResponse"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Entity",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/secure/transfers/quote" : {
+      "post" : {
+        "tags" : [ "Transfers" ],
+        "summary" : "Quote (preview) a transfer",
+        "description" : "Legacy /secure/quote.do: validates and prices without persisting. Validation failures are HTTP 422 with the verbatim legacy message (valid JSON even for the daily-limit case).",
+        "operationId" : "quote",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TransferRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Priced quote",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/QuoteResponse"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Unprocessable Entity",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logout" : {
+      "post" : {
+        "tags" : [ "Session" ],
+        "summary" : "Sign out",
+        "description" : "Legacy /logout.do: invalidates the session; olb_uid cookie is left untouched (AC-09).",
+        "operationId" : "logout",
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/api/login" : {
+      "post" : {
+        "tags" : [ "Session" ],
+        "summary" : "Sign in",
+        "description" : "Legacy /login.do. Case-insensitive user id, bcrypt password, 3-strike permanent lockout (AC-01..AC-05). A new session is created on success (fixation protection).",
+        "operationId" : "login",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Signed in; session cookie set",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "LOGIN_REQUIRED / LOGIN_INVALID / LOGIN_LOCKED with the legacy message",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/secure/transfers/{confirmation}" : {
+      "get" : {
+        "tags" : [ "Transfers" ],
+        "summary" : "Transfer by confirmation number",
+        "description" : "Scoped to the signed-in customer; other customers' numbers are 404.",
+        "operationId" : "byConfirmation",
+        "parameters" : [ {
+          "name" : "confirmation",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/secure/me" : {
+      "get" : {
+        "tags" : [ "Session" ],
+        "summary" : "Current customer",
+        "description" : "Name, relationship tier and the tier/frequency/delivery option lists the form needs.",
+        "operationId" : "me",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/secure/accounts" : {
+      "get" : {
+        "tags" : [ "Transfers" ],
+        "summary" : "Accounts",
+        "description" : "Active accounts ordered by seq_no with current and available balances (AC-11).",
+        "operationId" : "accounts",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/AccountResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/csrf" : {
+      "get" : {
+        "tags" : [ "Session" ],
+        "summary" : "CSRF token",
+        "description" : "Returns the XSRF-TOKEN value (also set as a readable cookie on every response). Send it back as X-XSRF-TOKEN on POST/PUT/DELETE to /api/secure/**.",
+        "operationId" : "csrf",
+        "parameters" : [ {
+          "name" : "token",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/CsrfToken"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "TransferRequest" : {
+        "type" : "object",
+        "description" : "Same fields as the legacy TransferForm. Values are raw strings so the legacy parsing/validation rules apply verbatim.",
+        "properties" : {
+          "fromAccountId" : {
+            "type" : "string",
+            "example" : "ACCT-1001"
+          },
+          "toAccountId" : {
+            "type" : "string",
+            "example" : "ACCT-1003"
+          },
+          "amount" : {
+            "type" : "string",
+            "description" : "Raw amount; '$' and ',' tolerated, max 2 decimals (AC-15)",
+            "example" : "1,250.00"
+          },
+          "tierCode" : {
+            "type" : "string",
+            "description" : "00/10/20/30. Required, no default — the submitted value is trusted (AC-20)",
+            "example" : "00"
+          },
+          "delivery" : {
+            "type" : "string",
+            "description" : "EXN = next business day; anything else/absent = EXS (3 business days)",
+            "example" : "EXN"
+          },
+          "frequency" : {
+            "type" : "string",
+            "description" : "O/W/M; absent = O. Cosmetic in legacy (one transfer row is created)",
+            "example" : "O"
+          },
+          "scheduledDate" : {
+            "type" : "string",
+            "description" : "MM/dd/yyyy (ISO yyyy-MM-dd also accepted); blank = today (ET)",
+            "example" : "10/13/2026"
+          },
+          "memo" : {
+            "type" : "string",
+            "description" : "Optional, max 60 chars, ignored by quote",
+            "example" : "Rent"
+          }
+        }
+      },
+      "ApiError" : {
+        "type" : "object",
+        "description" : "Error envelope. `message` is the verbatim legacy user-facing text; `code` is stable for clients.",
+        "properties" : {
+          "ok" : {
+            "type" : "boolean",
+            "example" : false
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32",
+            "example" : 422
+          },
+          "code" : {
+            "type" : "string",
+            "example" : "XFR_PERTXN"
+          },
+          "message" : {
+            "type" : "string",
+            "example" : "This transfer exceeds the per-transfer limit of $3,500.00 for your relationship tier."
+          }
+        }
+      },
+      "AccountResponse" : {
+        "type" : "object",
+        "properties" : {
+          "accountId" : {
+            "type" : "string"
+          },
+          "typeCode" : {
+            "type" : "string"
+          },
+          "productName" : {
+            "type" : "string"
+          },
+          "last4" : {
+            "type" : "string"
+          },
+          "displayName" : {
+            "type" : "string"
+          },
+          "external" : {
+            "type" : "boolean"
+          },
+          "savings" : {
+            "type" : "boolean"
+          },
+          "externalBankName" : {
+            "type" : "string"
+          },
+          "seqNo" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "statusCode" : {
+            "type" : "string"
+          },
+          "currentBalanceCents" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "currentBalance" : {
+            "type" : "string"
+          },
+          "availableBalanceCents" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "availableBalance" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TransferResponse" : {
+        "type" : "object",
+        "properties" : {
+          "confirmationNumber" : {
+            "type" : "string"
+          },
+          "statusCode" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "scheduledDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "postDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "delivery" : {
+            "type" : "string"
+          },
+          "from" : {
+            "type" : "string"
+          },
+          "to" : {
+            "type" : "string"
+          },
+          "fromAccountId" : {
+            "type" : "string"
+          },
+          "toAccountId" : {
+            "type" : "string"
+          },
+          "amountCents" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "amount" : {
+            "type" : "string"
+          },
+          "feeCents" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "fee" : {
+            "type" : "string"
+          },
+          "totalCents" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total" : {
+            "type" : "string"
+          },
+          "typeCode" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "tierCode" : {
+            "type" : "string"
+          },
+          "tier" : {
+            "type" : "string"
+          },
+          "frequencyCode" : {
+            "type" : "string"
+          },
+          "frequency" : {
+            "type" : "string"
+          },
+          "memo" : {
+            "type" : "string"
+          },
+          "createdTs" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "heading" : {
+            "type" : "string"
+          },
+          "note" : {
+            "type" : "string"
+          },
+          "accounts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AccountResponse"
+            }
+          }
+        }
+      },
+      "QuoteResponse" : {
+        "type" : "object",
+        "description" : "Legacy /secure/quote.do contract (ok, from, to, amount, fee, total, type, tier, delivery as display strings) plus structured fields.",
+        "properties" : {
+          "ok" : {
+            "type" : "boolean"
+          },
+          "from" : {
+            "type" : "string"
+          },
+          "to" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "string"
+          },
+          "fee" : {
+            "type" : "string"
+          },
+          "total" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "tier" : {
+            "type" : "string"
+          },
+          "delivery" : {
+            "type" : "string"
+          },
+          "fromAccountId" : {
+            "type" : "string"
+          },
+          "toAccountId" : {
+            "type" : "string"
+          },
+          "amountCents" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "feeCents" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalCents" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "typeCode" : {
+            "type" : "string"
+          },
+          "tierCode" : {
+            "type" : "string"
+          },
+          "frequencyCode" : {
+            "type" : "string"
+          },
+          "frequency" : {
+            "type" : "string"
+          },
+          "scheduledDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "deliveryDate" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "LoginRequest" : {
+        "type" : "object",
+        "properties" : {
+          "userId" : {
+            "type" : "string",
+            "example" : "demo.user"
+          },
+          "password" : {
+            "type" : "string",
+            "example" : "Password1"
+          },
+          "saveUserId" : {
+            "type" : "boolean",
+            "description" : "Legacy 'Save user ID' checkbox: sets/clears the olb_uid cookie (AC-06)",
+            "example" : true
+          }
+        }
+      },
+      "CodeLabel" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          }
+        }
+      },
+      "MeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "customerId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "userId" : {
+            "type" : "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "displayName" : {
+            "type" : "string"
+          },
+          "tierCode" : {
+            "type" : "string"
+          },
+          "tierLabel" : {
+            "type" : "string"
+          },
+          "tierOptions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CodeLabel"
+            }
+          },
+          "frequencyOptions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CodeLabel"
+            }
+          },
+          "deliveryOptions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CodeLabel"
+            }
+          },
+          "lastLogin" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "sessionTimeoutSeconds" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "CsrfToken" : {
+        "type" : "object",
+        "properties" : {
+          "parameterName" : {
+            "type" : "string"
+          },
+          "token" : {
+            "type" : "string"
+          },
+          "headerName" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}
