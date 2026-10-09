@@ -1,0 +1,4 @@
+.footer { background: var(--color-surface-band); color: var(--color-text-muted); font-size: 12px; line-height: 20px; padding: 26px 0 40px; margin-top: 40px; }
+.links { list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.links span { color: var(--color-link); }
+.stamp { color: var(--color-text-subtle); margin-top: 4px; }
