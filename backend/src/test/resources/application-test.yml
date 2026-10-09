@@ -1,0 +1,7 @@
+olb:
+  test-clock:
+    enabled: true
+logging:
+  level:
+    org.testcontainers: WARN
+    com.github.dockerjava: WARN

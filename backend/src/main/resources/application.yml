@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: olb-transfers-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/olb}
+    username: ${SPRING_DATASOURCE_USERNAME:olb}
+    password: ${SPRING_DATASOURCE_PASSWORD:olb}
+  flyway:
+    enabled: true
+  session:
+    jdbc:
+      initialize-schema: always
+    timeout: 10m                 # legacy web.xml <session-timeout>10</session-timeout> (AC-08)
+  jackson:
+    default-property-inclusion: non_null
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 10m
+      tracking-modes: cookie
+      cookie:
+        name: SESSION
+        http-only: true
+        same-site: lax
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+olb:
+  business-zone: America/New_York      # legacy run.sh -Duser.timezone
+  cutoff-hour: ${OLB_CUTOFF_HOUR:20}    # legacy web.xml olb.cutoff.hour
+  lockout-threshold: 3                 # legacy CustomerDAO 3-strike CASE
+  reg-d-monthly-limit: 6               # legacy TransferService.REG_D_MONTHLY_LIMIT
+  internal-per-txn-cap-cents: 9999999  # legacy TransferService.INTERNAL_PER_TXN_CAP_CENTS ($99,999.99)
+  history-limit: 10                    # legacy TransferViewAction / TransferDAO.findRecent
+  fixed-now: ${OLB_FIXED_NOW:}         # demo/test: pin "now" (ISO instant like 2026-10-09T16:00:00Z, or ET local 2026-10-09T12:00)
+  test-clock:
+    enabled: ${OLB_TEST_CLOCK_ENABLED:false}   # exposes POST/DELETE /api/test/clock (e2e only)
+  cors:
+    allowed-origins: ${OLB_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+
+logging:
+  level:
+    root: INFO
+    com.bofa.olb: INFO
