@@ -9,6 +9,11 @@
 .logo-public .logo-flag { margin-left: 4px; margin-top: -4px; }
 .logo-olb .logo-flag { margin-right: 8px; }
 @media (max-width: 767px) { .logo-text { font-size: 17px; letter-spacing: 3px; } .logo-olb .logo-flag { width: 36px; } }
+@media (max-width: 479px) {
+  .logo { min-width: 0; }
+  .logo-olb .logo-text { font-size: 13px; letter-spacing: 1px; }
+  .logo-olb .logo-flag { width: 28px; margin-right: 6px; }
+}
 
 /* ---------- Landing ---------- */
 .landing-hero { position: relative; }

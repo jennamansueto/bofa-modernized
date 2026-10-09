@@ -77,7 +77,7 @@
   .prodnav ul, .pnav ul { flex-direction: column; }
   .prodnav li, .pnav li { line-height: 44px; font-size: 16px; padding: 0; }
   .prodnav ul { padding-top: 4px; padding-bottom: 8px; }
-  .olbInner { min-height: 64px; gap: 8px 12px; }
+  .olbInner { min-height: 64px; gap: 8px 12px; grid-template-columns: minmax(0, 1fr) auto; }
   .pnav { padding-bottom: 8px; }
   .actions { gap: 4px; }
   .actions :global(.pill) { height: 44px; padding: 0 18px; font-size: 15px; }
