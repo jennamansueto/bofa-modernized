@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 import { Link, isRouteErrorResponse, useNavigate, useRouteError } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { ApiError } from '@/api/client';
 import { useLogout } from '@/api/hooks';
-import { queryKeys } from '@/api/olb';
-import type { MeResponse } from '@/api/types';
+import { olbApi, queryKeys } from '@/api/olb';
 import { Footer } from '@/components/layout/Footer';
 import { OlbHeader } from '@/components/layout/OlbHeader';
 import { MSG, TITLES } from '@/lib/messages';
@@ -14,8 +13,8 @@ import { useDocumentTitle } from '@/lib/useDocumentTitle';
 export function ErrorPage({ status }: { status?: number }) {
   useDocumentTitle(TITLES.error);
   const routeError = useRouteError() as unknown;
-  const qc = useQueryClient();
-  const me = qc.getQueryData<MeResponse>(queryKeys.me);
+  // Ask the server too, so a direct load of an unknown URL still shows the signed-in header.
+  const { data: me } = useQuery({ queryKey: queryKeys.me, queryFn: olbApi.me, retry: false, staleTime: 60_000 });
   const logout = useLogout();
   const navigate = useNavigate();
   const doLogout = () => logout.mutate(undefined, { onSettled: () => navigate('/', { replace: true }) });
