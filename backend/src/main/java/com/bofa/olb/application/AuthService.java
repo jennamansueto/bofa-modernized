@@ -36,7 +36,7 @@ public class AuthService {
 
     @Transactional(noRollbackFor = AuthenticationFailedException.class)   // the strike must persist
     public Customer authenticate(String userId, String password) {
-        if (userId == null || userId.isBlank() || password == null || password.isEmpty()) {
+        if (userId == null || userId.isBlank() || password == null || password.isBlank()) {
             throw new AuthenticationFailedException("error.login.required");
         }
         Optional<Customer> found = customers.findByUserId(userId.trim());

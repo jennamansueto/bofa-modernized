@@ -1,0 +1,13 @@
+{
+  "name": "bofa-modernized",
+  "private": true,
+  "description": "Root convenience scripts: the Playwright acceptance suite lives in e2e/ and runs against the docker compose stack.",
+  "scripts": {
+    "test": "npm --prefix e2e test",
+    "test:quick": "npm --prefix e2e run test:quick",
+    "test:headed": "npm --prefix e2e run test:headed",
+    "test:demo": "npm --prefix e2e run test:demo",
+    "e2e:report": "npm --prefix e2e run report",
+    "e2e:traceability": "npm --prefix e2e run traceability"
+  }
+}
